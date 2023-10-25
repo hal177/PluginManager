@@ -1,13 +1,13 @@
 set(TARGET Dummy2GeneratorPlugin)
 
 set(${TARGET}_HDR
-  ${CMAKE_CURRENT_SOURCE_DIR}/DummyGenerator.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/DummyGeneratorPlugin.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/Dummy2Generator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/Dummy2GeneratorPlugin.h
   )
 
 set(${TARGET}_SRC
-  ${CMAKE_CURRENT_SOURCE_DIR}/DummyGenerator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/DummyGeneratorPlugin.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Dummy2Generator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Dummy2GeneratorPlugin.cpp
   )
 
 set(${TARGET}_INC

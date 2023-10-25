@@ -10,14 +10,14 @@
 
 #include <memory>
 
-class DummyGeneratorImpl;
+class Dummy2GeneratorImpl;
 
-class DummyGeneratorPlugin : public plugin::StdPluginLib
+class Dummy2GeneratorPlugin : public plugin::StdPluginLib
 {
 public:
-    DummyGeneratorPlugin();
+    Dummy2GeneratorPlugin();
 private:
-    std::shared_ptr<DummyGeneratorImpl> m_dummyGenerator;
+    std::shared_ptr<Dummy2GeneratorImpl> m_dummyGenerator;
 };
 
 #endif // DUMMYGENERATORPLUGIN_H_8817B948_9744_4778_83CF_730F6E67BC08
