@@ -2,9 +2,9 @@
 // Created by nicolasrobert on 3/24/15.
 //
 
-#include "DummyGenerator.h"
+#include "Dummy2Generator.h"
 
-int DummyGeneratorImpl::GetNumber()
+int Dummy2GeneratorImpl::GetNumber()
 {
     return 13;
 }
