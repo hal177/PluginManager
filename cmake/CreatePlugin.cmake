@@ -44,9 +44,20 @@ macro(CreatePluginMacro PLUGIN PLUGIN_TYPE)
         # See the if statement at the top, this assumes that the plugin type is TEST for now
         message(VERBOSE "Copying test plugin ${PLUGIN}")
 
-        set_target_properties(${PLUGIN} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Test/plugins
-        )
+        if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+            # This is the top-level project
+            message(STATUS "This is the top-level project.")
+            set_target_properties(${PLUGIN} PROPERTIES
+                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Test/plugins
+            )
+        else()
+            # This is being included from another project
+            message(STATUS "This is being included from another project.")
+            set_target_properties(${PLUGIN} PROPERTIES
+                LIBRARY_OUTPUT_DIRECTORY ${pluginmanager_BINARY_DIR}/Test/plugins
+            )
+        endif()
+
     endif()
 
 endmacro()
