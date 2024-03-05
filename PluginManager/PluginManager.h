@@ -260,7 +260,7 @@ namespace plugin {
         /// \param envVarOverride Environment variable that overrides the prefix
         /// \param defaultPrefix Default path prefix to use if filename is
         ///        relative and env var is not set.
-        static std::filesystem::path ResolvePathInternal(std::string filename,
+        static std::filesystem::path ResolvePathInternal(std::filesystem::path filename,
                                               const char* envVarOverride,
                                               std::string defaultPrefix);
 

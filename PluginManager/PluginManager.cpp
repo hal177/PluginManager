@@ -15,7 +15,6 @@
 #include <stdexcept>
 #include <utility>
 
-
 namespace plugin
 {
     // This is a helper class to handle plugin loading
@@ -277,7 +276,7 @@ namespace plugin
         return ResolvePathInternal(filename, "PLUGIN_PATH", "plugins/");
     }
 
-    std::filesystem::path PluginManager::ResolvePathInternal(std::string filename,
+    std::filesystem::path PluginManager::ResolvePathInternal(std::filesystem::path filename,
                                                const char* envVarOverride,
                                                std::string defaultPrefix)
     {
@@ -285,18 +284,35 @@ namespace plugin
             throw std::logic_error{ "Received blank filename in ResolvePathInternal" };
         }
 
-        std::ifstream file(filename.c_str());
-
         // Respect absolute paths. We assume that client passed an absolute
         // path because they know the exact location which is fixed.
-        if (file.is_open() || filename[0] == '/') {
+        if(std::filesystem::exists(filename) || filename.is_absolute()) {
             return filename;
         }
 
         // Check environment variable to override the default location
         const char *pluginDir = std::getenv(envVarOverride);
+
+        // split pluginDir into a vector of strings on the : character, allows for multiple paths to be specified
+        std::vector<std::string> pluginDirs;
         if (pluginDir) {
-            return std::filesystem::path{pluginDir} / filename;
+            std::string pluginDirStr{pluginDir};
+            std::string delimiter = ":";
+            size_t pos = 0;
+            std::string token;
+            while ((pos = pluginDirStr.find(delimiter)) != std::string::npos) {
+                token = pluginDirStr.substr(0, pos);
+                pluginDirs.push_back(token);
+                pluginDirStr.erase(0, pos + delimiter.length());
+            }
+            pluginDirs.push_back(pluginDirStr);
+        }
+
+        for (auto const& dir : pluginDirs) {
+            auto const path = std::filesystem::path{dir} / filename;
+            if (std::filesystem::exists(path)) {
+                return path;
+            }
         }
 
         // Fallback onto default, which is path to application binary
