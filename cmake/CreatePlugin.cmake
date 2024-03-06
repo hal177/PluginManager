@@ -10,8 +10,8 @@
 #                          test plugin directory.
 #
 macro(CreatePluginMacro PLUGIN PLUGIN_TYPE)
-    string(COMPARE EQUAL "${PLUGIN_TYPE}" TEST _cmp)
-    if(NOT _cmp)
+    string(COMPARE EQUAL "${PLUGIN_TYPE}" TEST _isTestPlugin)
+    if(NOT _isTestPlugin)
         message(FATAL_ERROR "Invalid plugin type: ${PLUGIN_TYPE} for plugin ${PLUGIN}")
     endif()
 
@@ -40,12 +40,10 @@ macro(CreatePluginMacro PLUGIN PLUGIN_TYPE)
             )
     endforeach()
 
-    if(_cmp)
-        # See the if statement at the top, this assumes that the plugin type is TEST for now
-        message(VERBOSE "Copying test plugin ${PLUGIN}")
-
+    if(_isTestPlugin)
+        message(VERBOSE "Setting output directory for ${PLUGIN} to ${CMAKE_BINARY_DIR}/Test/plugins")
         set_target_properties(${PLUGIN} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Test/plugins
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Test/plugins/
         )
     endif()
 

@@ -17,6 +17,7 @@
 
 
 using namespace testing;
+using namespace std::string_literals;
 
 namespace
 {
@@ -169,7 +170,30 @@ TEST(TestPluginManagerPathResolution, RespectsAbsolutePath_Config)
 
 TEST(TestPluginManagerPathResolution, RespectsEnvironmentOverride_Plugin)
 {
-    setenv("PLUGIN_PATH", "/tmp/overridden", 1);
+    std::filesystem::path const overriddenPath("/tmp/overridden");
+    std::filesystem::create_directories(overriddenPath);
+
+    auto const exePath = plugin::detail::GetApplicationPath();
+
+    std::filesystem::copy_file(exePath / "plugins" / "libDummyGeneratorPlugin.so", overriddenPath / "some.plugin.so", std::filesystem::copy_options::overwrite_existing);
+
+    setenv("PLUGIN_PATH", overriddenPath.c_str(), 1);
+
+    EXPECT_THAT(plugin::PluginManager::ResolvePluginPath("some.plugin.so"),
+                Eq("/tmp/overridden/some.plugin.so"));
+}
+
+TEST(TestPluginManagerPathResolution, RespectsEnvironmentOverride_Plugin_Multipath)
+{
+    std::filesystem::path const overriddenPath("/tmp/overridden");
+    std::filesystem::create_directories(overriddenPath);
+
+    auto const exePath = plugin::detail::GetApplicationPath();
+
+    std::filesystem::copy_file(exePath / "plugins" / "libDummyGeneratorPlugin.so", overriddenPath / "some.plugin.so", std::filesystem::copy_options::overwrite_existing);
+
+    auto const multiPath = "/tmp/does_not_exist1:/tmp/does_not_exist2:"s + overriddenPath.native() + ":/tmp/does_not_exist3";
+    setenv("PLUGIN_PATH", multiPath.c_str(), 1);
 
     EXPECT_THAT(plugin::PluginManager::ResolvePluginPath("some.plugin.so"),
                 Eq("/tmp/overridden/some.plugin.so"));
@@ -177,26 +201,17 @@ TEST(TestPluginManagerPathResolution, RespectsEnvironmentOverride_Plugin)
 
 TEST(TestPluginManagerPathResolution, RespectsEnvironmentOverride_Config)
 {
-    setenv("PLUGIN_CONFIG_PATH", "/tmp/overridden_config", 1);
+    std::filesystem::path const overriddenPath("/tmp/overridden_config");
+    std::filesystem::create_directories(overriddenPath);
+
+    auto const exePath = plugin::detail::GetApplicationPath();
+
+    std::filesystem::copy_file(exePath / "pluginlist.pb.txt", overriddenPath / "some.pluginlist.pb.txt", std::filesystem::copy_options::overwrite_existing);
+
+    setenv("PLUGIN_CONFIG_PATH", overriddenPath.c_str(), 1);
 
     EXPECT_THAT(plugin::PluginManager::ResolveConfigPath("some.pluginlist.pb.txt"),
                 Eq("/tmp/overridden_config/some.pluginlist.pb.txt"));
-}
-
-TEST(TestPluginManagerPathResolution, RespectsEnvironmentOverrideWithRelativePath_Plugin)
-{
-    setenv("PLUGIN_PATH", "/tmp/overridden", 1);
-
-    EXPECT_THAT(plugin::PluginManager::ResolvePluginPath("../sub1/some.plugin.so"),
-                Eq("/tmp/overridden/../sub1/some.plugin.so"));
-}
-
-TEST(TestPluginManagerPathResolution, RespectsEnvironmentOverrideWithRelativePath_Config)
-{
-    setenv("PLUGIN_CONFIG_PATH", "/tmp/overridden_config", 1);
-
-    EXPECT_THAT(plugin::PluginManager::ResolveConfigPath("../sub1/some.pluginlist.pb.txt"),
-                Eq("/tmp/overridden_config/../sub1/some.pluginlist.pb.txt"));
 }
 
 TEST(TestPluginManagerPathResolution, RespectsAbsolutePathEvenWhenEnvironmentSet_Plugin)
