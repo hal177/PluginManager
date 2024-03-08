@@ -91,13 +91,16 @@ namespace plugin {
         ///                   provided by the plugin (must be default
         ///                   constructable by this class)
         ///
-        template<typename IFACEIMPL>
-            std::shared_ptr<IFACEIMPL> AddExtension()
+        /// \tparam CTOR_PARAMS varaidic template for the constructor
+        ///                     parameters, forwarded to the constructor of
+        ///                     IFACEIMPL
+        template<typename IFACEIMPL, typename... CTOR_PARAMS>
+            std::shared_ptr<IFACEIMPL> AddExtension(CTOR_PARAMS... params)
         {
             // Using operator new instead of std::make_shared because
             // interface instances have private constructors, and a friend
             // relationship to allow this function to construct them.
-            std::shared_ptr<IFACEIMPL> const instance { new IFACEIMPL };
+            std::shared_ptr<IFACEIMPL> const instance { new IFACEIMPL{std::forward<CTOR_PARAMS>(params)...} };
             m_extensions.push_back(instance);
             return instance;
        }
