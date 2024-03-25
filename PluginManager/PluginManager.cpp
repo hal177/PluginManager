@@ -13,7 +13,11 @@
 #include <memory>
 #include <numeric>
 #include <stdexcept>
+#include <string>
 #include <utility>
+
+
+using namespace std::string_literals;
 
 namespace plugin
 {
@@ -120,8 +124,8 @@ namespace plugin
                 auto const remainingInstances = ext.use_count() - 1;
 
                 if(remainingInstances > 0) {
-                    LOG_TODO_ERROR( "There are still " << remainingInstances << " instances of the "
-                            << ext->GetId().GetName() << " interface still cached when destructing the PluginManager");
+                    PIM_LOGGER::error( "There are still " + std::to_string(remainingInstances) + " instances of the "
+                            + ext->GetId().GetName() + " interface still cached when destructing the PluginManager");
 
                     if(m_failHardOnShutdown) {
                         assert(!"Failing hard due to left-over cached plugins, please fix this before merging.");
@@ -138,7 +142,7 @@ namespace plugin
 
     void PluginManager::Load(std::vector<std::string> filesToParse)
     {
-        LOG_TODO_INFO("PluginManager: using configuration files: " + [&filesToParse]()->std::string{
+        PIM_LOGGER::info("Using configuration files: " + [&filesToParse]()->std::string{
                        std::string msgStr;
                        for(auto const& file : filesToParse) { msgStr += (file + ", "); }
                        return msgStr;
@@ -156,7 +160,7 @@ namespace plugin
 
             if(cend(alreadyParsedFiles) != std::find(cbegin(alreadyParsedFiles), cend(alreadyParsedFiles), nextFile))
             {
-                LOG_TODO_INFO("Found duplicate plugin config file, skipping:  " << nextFile);
+                PIM_LOGGER::info("Found duplicate plugin config file, skipping:  " + nextFile);
                 continue;
             }
 
@@ -165,7 +169,7 @@ namespace plugin
             // Resolve path according to documented heuristic
             nextFile = ResolveConfigPath(nextFile);
 
-            LOG_TODO_INFO("Loading plugin configuration file:  " << nextFile);
+            PIM_LOGGER::info("Loading plugin configuration file:  " + nextFile);
 
             auto const configuration = detail::ParseConfiguration(nextFile);
 
@@ -181,7 +185,7 @@ namespace plugin
         for (auto const& pluginName : plugins) {
 
             if(cend(skippedPlugins) != std::find(cbegin(skippedPlugins), cend(skippedPlugins), pluginName)) {
-                LOG_TODO_INFO("Plugin has been skipped, not loading plugin:  " << pluginName);
+                PIM_LOGGER::info("Plugin has been skipped, not loading plugin:  " + pluginName);
                 continue;
             }
 
@@ -193,7 +197,7 @@ namespace plugin
             // Resolve path according to documented heuristic
             auto const plName = ResolvePluginPath(pluginName);
 
-            LOG_TODO_INFO( "Loading plugin " << plName );
+            PIM_LOGGER::info( "Loading plugin " + plName.native() );
 
             auto pl = detail::libraryOpen(plName.c_str());
             if (!pl) {

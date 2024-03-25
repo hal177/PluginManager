@@ -3,7 +3,9 @@
 
 #include <cstring>
 #include <filesystem>
+#include <functional>
 #include <iostream>
+#include <string>
 
 
 #if defined(__unix__) || defined(__APPLE__)
@@ -11,10 +13,54 @@
 #  include <unistd.h>
 #endif
 
-// [DO NOT MERGE] RKERR TODO : Write a logging abstraction
-#define LOG_TODO_INFO(msg)  std::cerr << "[INFO]  " << msg << std::endl;
-#define LOG_TODO_ERROR(msg) std::cerr << "[ERROR] " << msg << std::endl;
+class PIM_LOGGER
+{
+public:
+    /// Used by the PluginManager to log info messages
+    ///
+    /// The default implementation logs to std::cout, but this can be overridden
+    /// by clients of the PluginManager by calling \ref setLogInfoHandler
+    static void info(std::string const& msg)
+    {
+        instance().logInfoHandler(msg);
+    }
 
+    /// Used by the PluginManager to log error messages
+    ///
+    /// The default implementation logs to std::cerr, but this can be overridden
+    /// by clients of the PluginManager by calling \ref setLogErrorHandler
+    static void error(std::string const& msg)
+    {
+        instance().logErrorHandler(msg);
+    }
+
+    /// Allows clients of the PluginManager to set their own info logging function
+    static void setLogInfoHandler(std::function<void(std::string)> const& logInfoFunc)
+    {
+        instance().logInfoHandler = logInfoFunc;
+    };
+
+    /// Allows clients of the PluginManager to set their own error logging function
+    static void setLogErrorHandler(std::function<void(std::string)> const& logErrorFunc)
+    {
+        instance().logErrorHandler = logErrorFunc;
+    };
+
+private:
+    std::function<void(std::string)> logInfoHandler  = [](std::string const& msg) { std::cout << "[INFO]  PluginManager:  " << msg << std::endl; };
+    std::function<void(std::string)> logErrorHandler = [](std::string const& msg) { std::cerr << "[ERROR] PluginManager:  " << msg << std::endl; };
+
+    PIM_LOGGER() = default;
+    PIM_LOGGER(PIM_LOGGER const&) = delete;
+    PIM_LOGGER& operator=(PIM_LOGGER const&) = delete;
+
+    static PIM_LOGGER& instance()
+    {
+        static PIM_LOGGER instance;
+        return instance;
+    }
+
+};
 
 // [DO NOT MERGE] RKERR TODO : Improve this file:
 //       - test on and handle more platforms
@@ -66,7 +112,7 @@ inline std::filesystem::path GetApplicationPath()
     char nameBuf[bufSize] = {0};
     const auto retVal = readlink("/proc/self/exe", nameBuf, bufSize);
     if (retVal < 0) {
-        LOG_TODO_ERROR("Failed to read application path with error " << errno << ":" << std::strerror(errno));
+        PIM_LOGGER::error("Failed to read application path with error " + std::to_string(errno) +  ":" + std::strerror(errno));
         return {};
     }
 
