@@ -17,7 +17,7 @@ set(${TARGET}_SRC
   )
 
 # RKTODO:  Provide ability to create static vs shared library
-add_library(${TARGET} STATIC
+add_library(${TARGET} SHARED
     ${${TARGET}_SRC}
     ${${TARGET}_HDR}
 )
